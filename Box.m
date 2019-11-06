@@ -14,6 +14,7 @@ classdef Box < handle
         color;
         print;
         state;
+        pattern;
     end
     
     methods
@@ -25,12 +26,13 @@ classdef Box < handle
             obj.half_hei = heigth/2;
             obj.current = [width/2, heigth/2];
             obj.area = obj.half_hei*obj.half_wid + obj.half_wid;
-            obj.target = heigth/2;
+            obj.target = [1,1];
             obj.points = [center(1)-obj.half_wid,center(1)+obj.half_wid,...
             center(1)+obj.half_wid,center(1)-obj.half_wid;...
             center(2)-obj.half_hei,center(2)-obj.half_hei,...
             center(2)+obj.half_hei,center(2)+obj.half_hei;...
             ];
+            obj.pattern = Pattern('default.mat');
             obj.color = col;
             obj.state = 0;
             obj.v = 0;
@@ -39,15 +41,22 @@ classdef Box < handle
         function picture = draw(obj)
             %METHOD1 此处显示有关此方法的摘要
             %   返回图形对象
-            picture = fill(obj.points(1,:), obj.points(2,:),obj.color);
+            picture{1} = fill(obj.points(1,:), obj.points(2,:),obj.color);
+            for i = 1:length(obj.pattern.points)
+                r = (obj.pattern.points{i} - 0.5).*[obj.current(1);obj.current(2)]+[obj.center(1);obj.center(2)];
+                picture{2}{i} = plot(r(1,:),r(2,:),'k','linewidth',2);
+            end
         end
 
         function points = get_points(obj)
             % 返回当前顶点
-            points = [obj.center(1)-obj.current(1),obj.center(2)-obj.current(2);...
+            points{1} = [obj.center(1)-obj.current(1),obj.center(2)-obj.current(2);...
             obj.center(1)+obj.current(1),obj.center(2)-obj.current(2);...
             obj.center(1)+obj.current(1),obj.center(2)+obj.current(2);...
             obj.center(1)-obj.current(1),obj.center(2)+obj.current(2)];
+            for i = 1:length(obj.pattern.points)
+                points{2}{i} = (obj.pattern.points{i} - 0.5).*[obj.current(1);obj.current(2)]+[obj.center(1);obj.center(2)];
+            end
         end
 
         function update(obj,acc,dt)
@@ -70,22 +79,24 @@ classdef Box < handle
                     obj.state = 0;
                     obj.v = 0;
                 end
-                obj.current(2) = obj.current(2) - 4*(obj.current(2)-obj.target)*dt;
+                obj.current(2) = obj.current(2) - 4*(obj.current(2)-obj.target(2)*obj.half_hei)*dt;
                 obj.current(1) = obj.area/(obj.current(2)+1);
+                obj.target(1) = obj.current(1)/obj.half_wid;
             end
 
             if obj.state == 0
                 if obj.v > 0
                     obj.current(2) = obj.current(2) + obj.v*dt;
                 else
-                    obj.current(2) = obj.current(2) - 4*(obj.current(2)-obj.target)*dt;
+                    obj.current(2) = obj.current(2) - 4*(obj.current(2)-obj.target(2)*obj.half_hei)*dt;
                 end
                 obj.current(1) = obj.area/(obj.current(2)+1);
+                obj.target(1) = obj.current(1)/obj.half_wid;
                 obj.center(2) = obj.current(2);
             end
             if obj.center(2) >= obj.half_hei + 1 && obj.v > 0
                 obj.state = 1;
-                obj.target = obj.half_hei;
+                obj.target(2) = 1;
             end
         end
     end

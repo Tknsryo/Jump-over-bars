@@ -29,9 +29,14 @@ classdef  World < handle
             obj.place_barriers_time = obj.time + 1;
             obj.window = figure('name','Jump over bars');
             obj.sub_window = axes();
-            obj.player = Box([3,10],2,2,'y'); %customize the player
-            obj.player_print = obj.player.draw();
-            set(obj.player_print,'Parent',obj.sub_window);
+            set(obj.sub_window,'NextPlot','add');
+            obj.player = Box([3,10],2,2,'g'); %customize the player
+            obj.player_print = obj.player.draw(); %获取玩家对象用于可视化的数据
+            set(obj.player_print{1},'Parent',obj.sub_window);
+            for i = 1:length(obj.player_print{2})
+                set(obj.player_print{2}{i},'Parent',obj.sub_window);
+            end
+            set(obj.sub_window,'NextPlot','replace');
             set(obj.sub_window,'xlim',[0,16]);
             set(obj.sub_window,'ylim',[0,9]);
         end
@@ -52,14 +57,12 @@ classdef  World < handle
                 obj.time = dt + obj.time;
                 obj.real_time = dt + obj.real_time;
                 %disp(obj.barriers{end});
-                obj.info = ['t = ', num2str(obj.time-obj.init_time)];
                 if ~isempty(obj.barriers) && (obj.barriers{1}.displacement < 0.5)
                     delete(obj.barrier_prints{1});
                     delete(obj.barriers{1});
                     obj.barriers(1) = [];
                     obj.barrier_prints(1) = [];
                 end
-
                 if obj.time - obj.place_barriers_time > 0
                     obj.barriers{end+1} = Barrier([2+2*rand,0,obj.width]);
                     set(obj.sub_window,'NextPlot','add');
@@ -77,9 +80,9 @@ classdef  World < handle
                         obj.player.v = 11;
                 end
                 if detector('squat') % squat detector
-                    obj.player.target = obj.player.half_hei/3;
+                    obj.player.target(2) = 1/3;
                 else
-                    obj.player.target = obj.player.half_hei;
+                    obj.player.target(2) = 1;
                 end
                 obj.player.update(-15,dt);
                 if obj.iscollision()
@@ -128,20 +131,30 @@ classdef  World < handle
                 pla = obj.barriers{i}.displacement;
                 set(p,'xdata',[pla, pla]);
             end
-            set(obj.player_print,'Vertices',obj.player.get_points());
+            ps = obj.player.get_points();
+            set(obj.player_print{1},'Vertices',ps{1});
+            for i = 1:length(ps{2})
+                set(obj.player_print{2}{i},'xdata',ps{2}{i}(1,:));
+                set(obj.player_print{2}{i},'ydata',ps{2}{i}(2,:));
+            end
             set(obj.sub_window,'NextPlot','replace');
+            obj.info = ['t = ', num2str(obj.time-obj.init_time)];
+            set(obj.sub_window.XLabel,'String',obj.info);
         end
 
         function fix_window(obj)
             % fix the broken window.
-            obj.window = figure('name','test');
+            obj.window = figure('name','Jump over bars');
             obj.sub_window = axes();
             set(obj.sub_window,'xlim',[0,16]);
             set(obj.sub_window,'ylim',[0,9]);
             obj.barrier_prints(1:end) = [];
             set(obj.sub_window,'NextPlot','add');
             obj.player_print = obj.player.draw();
-            set(obj.player_print,'Parent',obj.sub_window);
+            set(obj.player_print{1},'Parent',obj.sub_window);
+            for i = 1:length(obj.player_print{2})
+                set(obj.player_print{2}{i},'Parent',obj.sub_window);
+            end
             for i = 1:length(obj.barriers)
                 obj.barrier_prints{i} = obj.barriers{i}.draw();
             end
@@ -161,11 +174,18 @@ classdef  World < handle
             end
             obj.barriers = {};obj.barrier_prints = {};
             obj.place_barriers_time = obj.time + 1;
-            obj.player = Box([4,10],2,2,'y'); %customize the player
+            obj.player = Box([4,10],2,2,'g'); %customize the player
+            delete(obj.sub_window);
+            obj.sub_window = axes();
+            set(obj.sub_window,'NextPlot','add');
             obj.player_print = obj.player.draw();
-            set(obj.player_print,'Parent',obj.sub_window);
+            set(obj.player_print{1},'Parent',obj.sub_window);
+            for i = 1:length(obj.player_print{2})
+                set(obj.player_print{2}{i},'Parent',obj.sub_window);
+            end
             set(obj.sub_window,'xlim',[0,16]);
             set(obj.sub_window,'ylim',[0,9]);
+            set(obj.sub_window,'NextPlot','replace');
         end
     end
 end
