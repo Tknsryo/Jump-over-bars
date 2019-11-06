@@ -27,7 +27,7 @@ classdef  Barrier < handle
         function picture = draw(obj)
             %METHOD1 此处显示有关此方法的摘要
             %   画出
-            picture = plot([0,0],[0,obj.len]);
+            picture = plot([-1,-1],[0,obj.len],'linewidth',2);
         end
 
         function move(obj,x)
