@@ -13,16 +13,22 @@ int main()
     char current_press, last_press = '\0';
     bool pause = 0;
     cout<<"-------------------CONTROLOR--------------------\n";
-    cout<<"---Press J to jump,\n---or K to squat,\n---or L to pause";
+    cout<<"---Press J to jump,\n---or K to squat,\n---or L to pause,\n---or R to restart";
     cout<<"------------------------------------------------\n";
     del('j');
     del('k');
     del('l');
+    del('r');
     while (true)
     {
         while(kbhit())
         {
             current_press = getch();
+            if (current_press == 'r')
+            {
+                add('r');
+                break;
+            }
             if (current_press == 'l')
             {
                 if (pause)
@@ -44,7 +50,7 @@ int main()
             }
             Sleep(100);
         }
-            del(last_press);
+        del(last_press);
         last_press = '\0';
         Sleep(10);
     }
@@ -71,6 +77,11 @@ char add(char x)
         creater.close();
         cout<<"PAUSE"<<endl;
         break;
+    case 'r':
+        creater.open("detect_zone\\restart", ios::out);
+        creater.close();
+        cout<<"Restarted"<<endl;
+        break;
     default:
         break;
     }
@@ -89,6 +100,9 @@ void del(char x)
         break;
     case 'l':
         remove("detect_zone\\pause");
+        break;
+    case 'r':
+        remove("detect_zone\\restart");
         break;
     default:
         break;

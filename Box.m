@@ -1,6 +1,6 @@
 classdef Box < handle
     %UNTITLED 此处显示有关此类的摘要
-    %   无限大边界
+    % 骚骚的矩形
     
     properties
         points;
@@ -32,7 +32,7 @@ classdef Box < handle
             center(2)-obj.half_hei,center(2)-obj.half_hei,...
             center(2)+obj.half_hei,center(2)+obj.half_hei;...
             ];
-            obj.pattern = Pattern('default.mat');
+            obj.pattern = Pattern('default.mat'); %自定义角色皮肤
             obj.color = col;
             obj.state = 0;
             obj.v = 0;
@@ -64,17 +64,16 @@ classdef Box < handle
         %
         % Syntax: output = myFun(input)
         %
-        % update the velocity and position and shape of the box
-            %disp(obj.center(2));
+        % update the velocity, position and shape of the box
             if  obj.state == 0 && obj.center(2)-obj.current(2) > 0
                 obj.state = 1;
             end
+            %滞空时改变位形的核心算法
             if obj.state
                 vp = obj.v;
                 obj.v = obj.v + acc*dt;
                 dy = (vp + obj.v)*dt/2;
                 obj.center(2) = obj.center(2) + dy;
-                %obj.points(2,:) = obj.points(2,:) + dy;
                 if obj.center(2)-obj.current(2) <= 0
                     obj.state = 0;
                     obj.v = 0;
@@ -83,7 +82,7 @@ classdef Box < handle
                 obj.current(1) = obj.area/(obj.current(2)+1);
                 obj.target(1) = obj.current(1)/obj.half_wid;
             end
-
+            %触地时改变位形的核心算法
             if obj.state == 0
                 if obj.v > 0
                     obj.current(2) = obj.current(2) + obj.v*dt;
