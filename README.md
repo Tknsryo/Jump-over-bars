@@ -4,8 +4,14 @@
 
 A little game that could be use for machine learning.
 
+## 运行游戏
+1. 在根目录("main.m"所在目录)创建名为“detect_zone”的目录；
+2. 运行根目录下的"controler.exe"可执行文件，若不存在，自行编译"controler"目录下的源文件并移动至根目录运行；
+3. 用支持“classdef”方式的进行面向对象编程的MATLAB(最小安装即可)运行根目录下的"main.m"；
+4. 根据提示操作，等待窗口跳出后，切换至"controler.exe"窗口，根据按键提示进行游戏。
+
 ## 游戏实现
-* MATLAB完成游戏中行为的运算与更新，以及可视化，
+* MATLAB完成游戏中行为的运算与更新，以及可视化；
 * C++完成键盘的输入检测，并通过一套简陋的接口与MATLAB的部分连接，实现实时控制。
 
 ## 关于接口
@@ -25,3 +31,5 @@ while true
    del('jump');
 end
 ```
+
+更完善的通信接口有待实现
