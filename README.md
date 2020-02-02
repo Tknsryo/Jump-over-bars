@@ -1,8 +1,10 @@
 # Jump over bars
 
-一个可用于机器学习的小游戏。
+一个可用于学习机器学习的小游戏。
 
-A little game that could be use for machine learning.
+A little game that could be used for machine learning.
+
+![demo](https://github.com/Tknsryo/Jump-over-bars/blob/v1.0/demo.gif)
 
 ## 运行游戏
 1. 在根目录("main.m"所在目录)创建名为“detect_zone”的目录；
