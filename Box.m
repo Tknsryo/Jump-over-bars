@@ -15,10 +15,11 @@ classdef Box < handle
         print;
         state;
         pattern;
+        parent;
     end
     
     methods
-        function obj = Box(center,width,heigth,col)
+        function obj = Box(center,width,heigth,col,ax)
             %UNTITLED 构造此类的实例
             %   creat a box
             obj.center = center;
@@ -36,26 +37,27 @@ classdef Box < handle
             obj.color = col;
             obj.state = 0;
             obj.v = 0;
+            obj.parent = ax;
         end
         
         function picture = draw(obj)
             %METHOD1 此处显示有关此方法的摘要
             %   返回图形对象
-            picture{1} = fill(obj.points(1,:), obj.points(2,:),obj.color);
+            picture.frame = fill(obj.parent,obj.points(1,:), obj.points(2,:),obj.color);
             for i = 1:length(obj.pattern.points)
                 r = (obj.pattern.points{i} - 0.5).*[obj.current(1);obj.current(2)]+[obj.center(1);obj.center(2)];
-                picture{2}{i} = plot(r(1,:),r(2,:),'k','linewidth',2);
+                picture.pattern{i} = plot(obj.parent,r(1,:),r(2,:),'k','linewidth',2);
             end
         end
 
         function points = get_points(obj)
             % 返回当前顶点
-            points{1} = [obj.center(1)-obj.current(1),obj.center(2)-obj.current(2);...
+            points.frame = [obj.center(1)-obj.current(1),obj.center(2)-obj.current(2);...
             obj.center(1)+obj.current(1),obj.center(2)-obj.current(2);...
             obj.center(1)+obj.current(1),obj.center(2)+obj.current(2);...
             obj.center(1)-obj.current(1),obj.center(2)+obj.current(2)];
             for i = 1:length(obj.pattern.points)
-                points{2}{i} = (obj.pattern.points{i} - 0.5).*[obj.current(1);obj.current(2)]+[obj.center(1);obj.center(2)];
+                points.pattern{i} = (obj.pattern.points{i} - 0.5).*[obj.current(1);obj.current(2)]+[obj.center(1);obj.center(2)];
             end
         end
 
