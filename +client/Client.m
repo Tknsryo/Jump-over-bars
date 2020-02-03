@@ -2,21 +2,21 @@ classdef  Client < handle
 % Used for interacting with the background server(Bg server) and the game,
 % or receiving data from them.
     properties (Access = public)
+        gameData = [];
+        maxLen = 0;
+        recvInterval = 0.01;
+    end
+    properties (Access = private)
         socket;
         address;
         port;
         recvTimer;
-        gameData;
-        maxLen;
     end
     methods
         function obj = Client(address,port)
             obj.socket = [];
             obj.setServer(address,port);
-            obj.initRecvTimer(0.01);
-            obj.gameData = [];
-            obj.maxLen = 0;
-            obj.connect();
+            obj.initRecvTimer(obj.recvInterval);
         end
         function setServer(obj,address,port)
             %determine the address and port
@@ -30,43 +30,12 @@ classdef  Client < handle
                 disp('maxLen: unsupported value');
             end
         end
-        function initRecvTimer(obj,period)
-        % initialize a timer for socket reading
-            obj.recvTimer = timer;
-            set(obj.recvTimer,'ExecutionMode','fixedRate');
-            set(obj.recvTimer,'period',period);
-            set(obj.recvTimer,'TimerFcn',@obj.readSocket);
-        end
-        function readSocket(obj,~,~)
-            if ~isempty(obj.socket) && obj.socket.BytesAvailable > 0
-                data = obj.socket.read(1);
-                switch data
-                case '~'
-                    header = obj.socket.read(3); %type|frameLen|batchs
-                    while obj.socket.BytesAvailable < header(2) % wait for incoming data
-                        continue;
-                    end
-                    switch header(1)
-                    case 'm' %message
-                        sdata = obj.socket.read(header(2));
-                        disp('*message from the server:');
-                        disp(char(sdata));
-                        disp('*')
-                    case 'd' %game's data
-                        obj.gameData(end+1).time = obj.socket.read(1,'double');
-                        obj.gameData(end).stat = obj.socket.read(1);
-                        obj.gameData(end).jump = obj.socket.read(1);
-                        obj.gameData(end).squat = obj.socket.read(1);
-                        obj.gameData(end).dis = obj.socket.read(3,'double');
-                        obj.gameData(end).len = obj.socket.read(3,'double');
-                        obj.socket.read(1);
-                        while obj.maxLen > 0 && length(obj.gameData) > obj.maxLen
-                            obj.gameData(1) = [];
-                        end
-                    end
-                otherwise
-                    obj.socket.read();
-                end
+        function set.recvInterval(obj,value)
+            if value <= 0
+                disp('recvInterval: unsupported value.')
+            else
+                obj.recvInterval = value;
+                disp('reconnect to take effect.');
             end
         end
         function connect(obj)
@@ -76,6 +45,7 @@ classdef  Client < handle
                 try
                     obj.socket = tcpclient(obj.address,obj.port,...
                     'ConnectTimeout',1);
+                    set(obj.recvTimer,'period',obj.recvInterval);
                 catch
                     disp('Fail to connect to background');
                     obj.socket = [];
@@ -98,14 +68,6 @@ classdef  Client < handle
                 delete(obj.socket);
                 obj.socket = [];
                 disp('disconnected');
-            end
-        end
-        function send(obj,header,data)
-            if ~isempty(obj.socket)
-                obj.socket.write(header);
-                obj.socket.write(data);
-            else
-                disp('send error: disconnected');
             end
         end
         function jump(obj,x)
@@ -159,7 +121,7 @@ classdef  Client < handle
                 if value >= 1 && value <= 60
                     obj.send(uint8(['~r',6,1]),uint8(['~s',2,1,'c',value]));
                 else
-                    disp('simulation rete: unsupported value');
+                    disp('recvRate rete: unsupported value');
                 end
             case 'autoRestart' % whether to restart the game when gameover(require 'reqDataFromGame')
                 if value == 1
@@ -200,6 +162,55 @@ classdef  Client < handle
         end
         function gameIsRunning(obj)
             obj.send(uint8(['~q',1,1]),uint8(['g']));
+        end
+    end
+    methods (Access = private)
+        function send(obj,header,data)
+            if ~isempty(obj.socket)
+                obj.socket.write(header);
+                obj.socket.write(data);
+            else
+                disp('send error: disconnected');
+            end
+        end
+        function initRecvTimer(obj,period)
+        % initialize a timer for socket reading
+            obj.recvTimer = timer;
+            set(obj.recvTimer,'ExecutionMode','fixedRate');
+            set(obj.recvTimer,'period',period);
+            set(obj.recvTimer,'TimerFcn',@obj.readSocket);
+        end
+        function readSocket(obj,~,~)
+            if ~isempty(obj.socket) && obj.socket.BytesAvailable > 0
+                data = obj.socket.read(1);
+                switch data
+                case '~'
+                    header = obj.socket.read(3); %type|frameLen|batchs
+                    while obj.socket.BytesAvailable < header(2) % wait for incoming data
+                        continue;
+                    end
+                    switch header(1)
+                    case 'm' %message
+                        sdata = obj.socket.read(header(2));
+                        disp('*message from the server:');
+                        disp(char(sdata));
+                        disp('*')
+                    case 'd' %game's data
+                        obj.gameData(end+1).time = obj.socket.read(1,'double');
+                        obj.gameData(end).stat = obj.socket.read(1);
+                        obj.gameData(end).jump = obj.socket.read(1);
+                        obj.gameData(end).squat = obj.socket.read(1);
+                        obj.gameData(end).dis = obj.socket.read(3,'double');
+                        obj.gameData(end).len = obj.socket.read(3,'double');
+                        obj.socket.read(1);
+                        while obj.maxLen > 0 && length(obj.gameData) > obj.maxLen
+                            obj.gameData(1) = [];
+                        end
+                    end
+                otherwise
+                    obj.socket.read();
+                end
+            end
         end
     end
 end
